@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tutoring Session</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kalam:wght@300;400;700&family=Patrick+Hand&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"
+            integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA=="
+            crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+<!-- ✅ LEFT SIDEBAR -->
+<div class="left-sidebar" id="left-sidebar">
+
+    <!-- Nav tabs -->
+    <div class="sb-tabs">
+        <button class="sb-tab active" id="sb-tab-user" data-tab="user">👤 User</button>
+        <button class="sb-tab" id="sb-tab-log" data-tab="log">📋 Log</button>
+    </div>
+
+    <!-- ── USER panel ── -->
+    <div class="sb-panel" id="sb-panel-user">
+
+        <!-- ✅ TOP ACTION ROW: NEW SESSION + CALENDAR -->
+        <div class="sb-action-row">
+            <button class="sb-action-btn" id="sb-new-session-btn" title="Start New Session">
+                <span class="sb-action-icon">✏️</span>NEW SESSION
+            </button>
+            <button class="sb-action-btn" id="sb-calendar-btn" title="Session Calendar">
+                <span class="sb-action-icon">📅</span>CALENDAR
+            </button>
+        </div>
+
+        <!-- ✅ CALENDAR POPUP -->
+        <div class="sb-calendar-popup" id="sb-calendar-popup">
+            <div class="sb-cal-title">
+                Session Calendar
+                <button class="sb-cal-close" id="cal-close-btn">✕</button>
+            </div>
+            <div class="sb-cal-nav">
+                <button class="sb-cal-nav-btn" id="cal-prev-btn">‹</button>
+                <span class="sb-cal-month-label" id="cal-month-label">April 2026</span>
+                <button class="sb-cal-nav-btn" id="cal-next-btn">›</button>
+            </div>
+            <div class="sb-cal-days-grid" id="cal-days-grid"></div>
+        </div>
+
+        <div class="sb-section-label" style="margin-top:4px">MODE</div>
+        <button class="sb-mode-toggle" id="learning-mode-toggle" type="button" aria-pressed="false">
+            <span class="sb-mode-track">
+                <span class="sb-mode-thumb"></span>
+            </span>
+            <span class="sb-mode-copy">
+                <span class="sb-mode-title" id="learning-mode-title">Shallow Mode</span>
+                <span class="sb-mode-meta" id="learning-mode-meta">Free mode</span>
+            </span>
+        </button>
+
+        <!-- ✅ RECENTS SECTION -->
+        <div class="sb-recents-section">
+            <div class="sb-recents-header">
+                <span class="sb-recents-label">Recents</span>
+                <button class="sb-recents-show-all" id="sb-recents-show-all">See all</button>
+            </div>
+            <div class="sb-recents-list" id="sb-recents-list">
+                <div class="sb-recents-empty">No recent sessions yet</div>
+            </div>
+        </div>
+
+        <div class="sb-advanced-settings">
+            <div class="advanced-settings-title">Advanced Settings</div>
+            <div class="advanced-settings-panel">
+                <div class="advanced-toggle-row">
+                    <div class="advanced-toggle-copy">
+                        <div class="advanced-toggle-label">Emotion Engine</div>
+                        <div class="advanced-toggle-meta">Optional affect middleware for tutoring turns.</div>
+                    </div>
+                    <button class="advanced-toggle-btn" id="emotion-engine-toggle" type="button" aria-pressed="false">
+                        <span class="advanced-toggle-thumb"></span>
+                    </button>
+                </div>
+                <div class="advanced-toggle-row">
+                    <div class="advanced-toggle-copy">
+                        <div class="advanced-toggle-label">Show Emotion Monitor</div>
+                        <div class="advanced-toggle-meta">Compact live popup for raw, fused, and policy signals.</div>
+                    </div>
+                    <button class="advanced-toggle-btn" id="emotion-monitor-toggle" type="button" aria-pressed="false">
+                        <span class="advanced-toggle-thumb"></span>
+                    </button>
+                </div>
+                <div class="advanced-toggle-row">
+                    <div class="advanced-toggle-copy">
+                        <div class="advanced-toggle-label">Face Mesh Overlay</div>
+                        <div class="advanced-toggle-meta">Render mesh landmarks on the camera preview.</div>
+                    </div>
+                    <button class="advanced-toggle-btn" id="face-mesh-toggle" type="button" aria-pressed="false">
+                        <span class="advanced-toggle-thumb"></span>
+                    </button>
+                </div>
+                <div class="advanced-toggle-row advanced-select-row">
+                    <div class="advanced-toggle-copy">
+                        <div class="advanced-toggle-label">Model Selection</div>
+                        <div class="advanced-toggle-meta">Choose the active LLM. Qwen 3.5 9B is now the default.</div>
+                    </div>
+                    <select class="advanced-select" id="llm-model-select">
+                        <option value="qwen3.5-9b">Qwen 3.5 9B</option>
+                        <option value="qwen2.5-32b">Qwen 2.5 32B</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <!-- ✅ PROFILE BOTTOM + END SESSION -->
+        <div class="sb-profile-bottom">
+            <div class="sb-profile-row" id="sb-profile-row">
+                <div class="sb-avatar" id="sb-bottom-avatar">S</div>
+                <div class="sb-profile-info" style="flex:1;min-width:0">
+                    <div class="sb-profile-name" id="sb-bottom-name">Swaran</div>
+                    <div class="sb-profile-meta" id="sb-bottom-meta">Age 21</div>
+                </div>
+                <span style="font-size:0.7rem;color:rgba(150,180,230,0.5)">⌄</span>
+            </div>
+
+            <!-- Profile popup -->
+            <div class="sb-profile-popup" id="sb-profile-popup">
+                <div class="sb-popup-item" id="sb-pop-settings">
+                    <span class="sb-popup-item-icon">⚙️</span> Settings
+                </div>
+                <div class="sb-popup-item">
+                    <span class="sb-popup-item-icon">🎨</span> Personalization
+                </div>
+                <div class="sb-popup-item" id="sb-pop-profile">
+                    <span class="sb-popup-item-icon">👤</span> Profile
+                </div>
+                <div class="sb-popup-item">
+                    <span class="sb-popup-item-icon">❓</span> Help
+                </div>
+                <div class="sb-popup-divider"></div>
+                <div class="sb-popup-item danger">
+                    <span class="sb-popup-item-icon">↩</span> Log out
+                </div>
+            </div>
+
+            <button class="sb-end-session-btn" id="sb-end-session-btn">⏹ End Session & Report</button>
+        </div>
+    </div>
+
+    <!-- ── LOG panel ── -->
+    <div class="sb-panel" id="sb-panel-log" style="display:none">
+        <div class="sb-log-toolbar">
+            <span class="sb-section-label" style="margin:0">EVENTS</span>
+            <button class="sb-log-clear-btn" id="sb-log-clear-btn" title="Clear log">X Clear</button>
+        </div>
+        <div class="sb-log-summary-stack">
+            <div class="sb-section-label" style="margin:0 0 8px">SERVICES</div>
+            <div class="sb-indicators sb-indicators-log">
+                <div class="sb-indicator">
+                    <span class="sb-ind-dot" id="log-ind-stt-dot"></span>
+                    <span class="sb-ind-label">STT</span>
+                    <span class="sb-ind-status" id="log-ind-stt-status">Connecting...</span>
+                </div>
+                <div class="sb-indicator">
+                    <span class="sb-ind-dot" id="log-ind-llm-dot"></span>
+                    <span class="sb-ind-label">LLM</span>
+                    <span class="sb-ind-status" id="log-ind-llm-status">Idle</span>
+                </div>
+                <div class="sb-indicator">
+                    <span class="sb-ind-dot" id="log-ind-tts-dot"></span>
+                    <span class="sb-ind-label">TTS</span>
+                    <span class="sb-ind-status" id="log-ind-tts-status">Idle</span>
+                </div>
+            </div>
+            <div class="sb-section-label" style="margin:12px 0 8px">LAST TURN</div>
+            <div class="sb-timing-summary" id="sb-log-timing-summary">
+                <div class="sb-timing-row"><span class="sb-tl">LLM</span><span class="sb-tv" id="log-st-llm">--</span></div>
+                <div class="sb-timing-row"><span class="sb-tl">TTS gen</span><span class="sb-tv" id="log-st-tts">--</span></div>
+                <div class="sb-timing-row"><span class="sb-tl">Speak dur</span><span class="sb-tv" id="log-st-spk">--</span></div>
+            </div>
+        </div>
+        <div class="sb-log-body" id="sb-log-body"></div>
+    </div>
+</div>
+
+<!-- ✅ TOPBAR — shifts right when sidebar opens, contains hamburger -->
+<div class="topbar" id="topbar">
+    <button class="sb-toggle-btn" id="sb-toggle-btn" title="Toggle Sidebar">
+        <span class="sb-toggle-arrow"></span>
+    </button>
+</div>
+
+<!-- ✅ SKY BACKGROUND LAYER (behind everything, fills body bg area) -->
+<div id="sky-bg" class="sky-bg">
+    <!-- Dynamic animated layers injected by JS -->
+    <canvas id="sky-canvas" class="sky-canvas"></canvas>
+</div>
+
+<!-- ✅ Settings Panel -->
+<div class="settings-wrapper" id="settings-wrapper">
+    <button class="settings-btn" id="settings-btn" title="Settings">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06
+                     a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09
+                     A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83
+                     l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09
+                     A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83
+                     l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09
+                     a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83
+                     l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09
+                     a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+    </button>
+
+    <div class="settings-dropdown" id="settings-dropdown">
+
+        <!-- ✅ User Profile Card -->
+        <div class="profile-card" id="profile-card">
+            <div class="profile-avatar" id="profile-avatar">S</div>
+            <div class="profile-info">
+                <div class="profile-name" id="profile-name">Swaran</div>
+                <div class="profile-meta" id="profile-meta">Age 21 · Locating...</div>
+            </div>
+            <div class="sky-time-pill" id="sky-time-pill">🌤️</div>
+        </div>
+
+        <!-- Profile expand panel -->
+        <div class="profile-sub-panel" id="profile-sub-panel">
+            <div class="profile-field">
+                <label>Name</label>
+                <input type="text" id="pf-name" value="Swaran" class="pf-input"/>
+            </div>
+            <div class="profile-field">
+                <label>Age</label>
+                <input type="number" id="pf-age" value="21" class="pf-input" style="width:60px"/>
+            </div>
+            <div class="profile-field">
+                <label>Location</label>
+                <select id="pf-location" class="pf-select">
+                    <option value="auto">📍 Auto-detect</option>
+                    <option value="Asia/Kolkata" selected>🇮🇳 India (IST)</option>
+                    <option value="America/New_York">🇺🇸 USA East</option>
+                    <option value="America/Los_Angeles">🇺🇸 USA West</option>
+                    <option value="Europe/London">🇬🇧 UK</option>
+                    <option value="Europe/Paris">🇫🇷 Europe (CET)</option>
+                    <option value="Asia/Dubai">🇦🇪 UAE</option>
+                    <option value="Asia/Singapore">🇸🇬 Singapore</option>
+                    <option value="Asia/Tokyo">🇯🇵 Japan</option>
+                    <option value="Australia/Sydney">🇦🇺 Australia</option>
+                </select>
+            </div>
+            <div class="profile-weather-status" id="profile-weather-status">🔄 Fetching weather...</div>
+        </div>
+
+        <div class="settings-divider"></div>
+
+        <div class="settings-item" id="voice-item">
+            <span class="settings-item-icon">🔊</span>
+            <span class="settings-item-label">Voice</span>
+            <span class="settings-item-arrow" id="voice-arrow">›</span>
+        </div>
+
+        <div class="voice-sub-panel" id="voice-sub-panel">
+            <!-- ENGINE: Humanised -->
+            <div class="engine-row" id="engine-row-humanised" data-engine="humanised">
+                <span class="engine-radio active" id="engine-radio-humanised"></span>
+                <span class="engine-label">Humanised</span>
+                <span class="engine-current-name male" id="engine-name-humanised">Ryan</span>
+                <span class="engine-expand-arrow" id="engine-arrow-humanised" data-engine="humanised">›</span>
+            </div>
+            <div class="engine-voice-list" id="voices-humanised"></div>
+
+            <div class="voice-divider"></div>
+
+            <!-- ENGINE: Bot -->
+            <div class="engine-row" id="engine-row-bot" data-engine="bot">
+                <span class="engine-radio" id="engine-radio-bot"></span>
+                <span class="engine-label">Bot</span>
+                <span class="engine-current-name male" id="engine-name-bot">David</span>
+                <span class="engine-expand-arrow" id="engine-arrow-bot" data-engine="bot">›</span>
+            </div>
+            <div class="engine-voice-list" id="voices-bot"></div>
+
+            <div class="voice-divider"></div>
+
+            <!-- ENGINE: Piper -->
+            <div class="engine-row" id="engine-row-piper" data-engine="piper">
+                <span class="engine-radio" id="engine-radio-piper"></span>
+                <span class="engine-label">Piper</span>
+                <span class="engine-current-name male" id="engine-name-piper">Lessac</span>
+                <span class="engine-expand-arrow" id="engine-arrow-piper" data-engine="piper">›</span>
+            </div>
+            <div class="engine-voice-list" id="voices-piper"></div>
+        </div>
+
+    </div>
+</div>
+
+<div class="main-container" id="main-container">
+    <!-- The Blackboard -->
+    <div class="blackboard-container" id="blackboard-container">
+        <div class="blackboard-frame" id="blackboard-frame">
+            <div class="blackboard-content" id="blackboard-text"></div>
+        </div>
+
+        <!-- ✅ Expand button — bottom-right corner of board -->
+        <button class="board-expand-btn" id="board-expand-btn" title="Fullscreen Board">
+            <!-- Expand icon -->
+            <svg id="expand-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 3 21 3 21 9"/>
+                <polyline points="9 21 3 21 3 15"/>
+                <line x1="21" y1="3" x2="14" y2="10"/>
+                <line x1="3" y1="21" x2="10" y2="14"/>
+            </svg>
+            <!-- Compress icon (hidden by default) -->
+            <svg id="compress-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"
+                 style="display:none">
+                <polyline points="4 14 10 14 10 20"/>
+                <polyline points="20 10 14 10 14 4"/>
+                <line x1="10" y1="14" x2="3" y2="21"/>
+                <line x1="21" y1="3" x2="14" y2="10"/>
+            </svg>
+        </button>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls-area" id="controls-area">
+        <div class="hand-raise-wrapper">
+            <button id="hand-raise-btn" class="hand-btn" title="Raise Hand to Interrupt">
+                ✋ Raise Hand
+            </button>
+        </div>
+
+        <!-- ✅ Mic & Speaker toggles -->
+        <div class="av-controls">
+            <button class="av-btn cam-btn" id="cam-btn" title="Camera Monitoring On/Off">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M23 7l-7 5 7 5V7z"/>
+                    <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+                </svg>
+                <span class="av-label" id="cam-label">CAM</span>
+            </button>
+            <!-- Mic button -->
+            <button class="av-btn mic-btn" id="mic-btn" title="Mic On/Off">
+                <svg id="mic-on-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                    <line x1="12" y1="19" x2="12" y2="23"/>
+                    <line x1="8" y1="23" x2="16" y2="23"/>
+                </svg>
+                <svg id="mic-off-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                     style="display:none">
+                    <line x1="1" y1="1" x2="23" y2="23"/>
+                    <path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"/>
+                    <path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"/>
+                    <line x1="12" y1="19" x2="12" y2="23"/>
+                    <line x1="8" y1="23" x2="16" y2="23"/>
+                </svg>
+                <span class="av-label" id="mic-label">MIC</span>
+            </button>
+
+            <!-- Speaker button -->
+            <button class="av-btn spk-btn" id="spk-btn" title="Speaker On/Off">
+                <svg id="spk-on-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+                    <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                </svg>
+                <svg id="spk-off-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                     style="display:none">
+                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                    <line x1="23" y1="9" x2="17" y2="15"/>
+                    <line x1="17" y1="9" x2="23" y2="15"/>
+                </svg>
+                <span class="av-label" id="spk-label">SPK</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Lower Panel -->
+    <div class="lower-panel" id="lower-panel">
+
+        <!-- ✅ Status row: YOU / AI / Text -->
+        <div class="status-row">
+            <div class="status-chip you-chip">
+                <span class="chip-label">YOU</span>
+                <span class="chip-text" id="user-text">Listening...</span>
+            </div>
+            <div class="status-chip ai-chip">
+                <span class="chip-label">AI</span>
+                <span class="chip-text" id="ai-status-text">
+                    <span class="ai-idle">Ready</span>
+                </span>
+            </div>
+        </div>
+
+        <!-- ✅ Text input row -->
+        <div class="file-badge-area" id="file-badge-area"></div>
+
+        <div class="text-input-row">
+            <div class="text-input-shell">
+                <input type="file" id="file-input"
+                       accept=".pdf,.doc,.docx,.txt,.md,.png,.jpg,.jpeg,.webp,.csv,.py,.js,.html,.css,.json"
+                       style="display:none" />
+                <button type="button" class="input-icon-btn upload-btn composer-launcher-btn" id="upload-btn" title="Add files or tools" aria-haspopup="menu" aria-expanded="false">+</button>
+                <textarea id="text-input" class="text-input" placeholder="Type here... or upload a file (Shift+Enter for new line)" autocomplete="off" rows="1"></textarea>
+            </div>
+            <button id="send-btn" class="send-btn">Send</button>
+        </div>
+
+        <div class="upload-status" id="upload-status"></div>
+        <div class="composer-plus-menu" id="composer-plus-menu" hidden>
+            <button type="button" class="composer-plus-item" id="composer-menu-upload">
+                <span class="composer-plus-item-icon">+</span>
+                <span class="composer-plus-item-copy">
+                    <strong>Add photos &amp; files</strong>
+                    <small>Upload PDFs, notes, images, or code files</small>
+                </span>
+            </button>
+            <button type="button" class="composer-plus-item" id="composer-menu-web-search" aria-pressed="false">
+                <span class="composer-plus-item-icon">o</span>
+                <span class="composer-plus-item-copy">
+                    <strong>Web search</strong>
+                    <small>Use trusted study and news sources for the next turn</small>
+                </span>
+            </button>
+        </div>
+
+        <!-- hidden cli-output kept for JS compat — not displayed -->
+        <div id="cli-output" style="display:none"></div>
+
+    </div>
+</div>
+
+<!-- ✅ Fullscreen floating input bar (shown only in fullscreen mode) -->
+<div class="fs-input-bar" id="fs-input-bar">
+    <button class="fs-hand-btn" id="fs-hand-btn" title="Raise Hand">✋</button>
+    <button class="fs-av-btn fs-upload-btn composer-launcher-btn" id="fs-upload-btn" title="Add files or tools" aria-haspopup="menu" aria-expanded="false">+</button>
+    <button class="fs-av-btn" id="fs-cam-btn" title="Camera">📷</button>
+    <button class="fs-av-btn" id="fs-mic-btn" title="Mic">🎙️</button>
+    <button class="fs-av-btn" id="fs-spk-btn" title="Speaker">🔊</button>
+    <div class="fs-status-group">
+        <span class="fs-chip-you"><b>YOU</b> <span id="fs-user-text">Listening...</span></span>
+        <span class="fs-chip-ai"><b>AI</b> <span id="fs-ai-text">Ready</span></span>
+    </div>
+    <textarea id="fs-text-input" class="fs-text-input" placeholder="Type here... (Shift+Enter = new line)" autocomplete="off" rows="1"></textarea>
+    <button id="fs-send-btn" class="fs-send-btn">Send</button>
+</div>
+
+<div class="cam-overlay" id="cam-overlay" style="display:none;">
+    <div class="cam-drag-handle" id="cam-drag-handle">
+        <span class="cam-drag-dot"></span><span class="cam-drag-dot"></span>
+        <span class="cam-drag-dot"></span><span class="cam-drag-dot"></span>
+        <span class="cam-drag-dot"></span><span class="cam-drag-dot"></span>
+    </div>
+    <video id="cam-video" autoplay muted playsinline></video>
+    <canvas id="cam-mesh-overlay" class="cam-mesh-overlay"></canvas>
+    <div id="cam-alert-banner" class="cam-alert-banner" style="display:none;"></div>
+</div>
+
+<div class="emotion-monitor" id="emotion-monitor" style="display:none;">
+    <!-- Header -->
+    <div class="emotion-monitor-header" id="emotion-monitor-handle">
+        <div>
+            <div class="emotion-monitor-title">🧠 Emotion Monitor</div>
+            <div class="emotion-monitor-subtitle" id="emotion-monitor-subtitle">Real-time pipeline flow</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+            <div class="emotion-monitor-pill-row" style="margin:0">
+                <span class="emotion-pill" id="emotion-pill-engine">Engine Off</span>
+                <span class="emotion-pill" id="emotion-pill-monitor">Monitor Off</span>
+                <span class="emotion-pill" id="emotion-pill-mesh">Mesh Off</span>
+            </div>
+            <button class="emotion-monitor-close" id="emotion-monitor-close" type="button">Hide</button>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="em-tabs">
+        <button class="em-tab active" data-tab="flow">🔀 Pipeline Flow</button>
+        <button class="em-tab" data-tab="raw">📊 Raw Signals</button>
+    </div>
+
+    <!-- ═══ TAB: PIPELINE FLOW ═══ -->
+    <div class="em-tab-panel active" id="em-panel-flow">
+        <div class="arch-flow-wrap">
+
+            <!-- Left: Architecture nodes -->
+            <div class="arch-pipeline-col" id="arch-pipeline-col">
+                <!-- Nodes injected by JS buildArchFlowPanel() -->
+            </div>
+
+            <!-- Right: Camera + Network panel -->
+            <div class="arch-cam-panel">
+                <div class="arch-cam-header">
+                    <span class="arch-cam-dot" id="arch-cam-dot"></span>
+                    CAMERA LIVE
+                </div>
+                <div class="arch-cam-body">
+                    <!-- Attention badge -->
+                    <div class="arch-attn-badge" id="arch-attn-badge">CAMERA OFF</div>
+
+                    <!-- Confidence bar -->
+                    <div class="arch-conf-bar-wrap">
+                        <div class="arch-conf-label">
+                            <span>Confidence</span>
+                            <span id="arch-conf-pct">0%</span>
+                        </div>
+                        <div class="arch-conf-bar">
+                            <div class="arch-conf-fill" id="arch-conf-fill" style="width:0%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Camera KV details -->
+                    <div class="arch-cam-kv">
+                        <span class="arch-cam-kv-label">Phone</span>
+                        <span class="arch-cam-kv-value" id="arch-cam-kv-phone_present">—</span>
+                    </div>
+                    <div class="arch-cam-kv">
+                        <span class="arch-cam-kv-label">People</span>
+                        <span class="arch-cam-kv-value" id="arch-cam-kv-person_count">—</span>
+                    </div>
+                    <div class="arch-cam-kv">
+                        <span class="arch-cam-kv-label">Action</span>
+                        <span class="arch-cam-kv-value" id="arch-cam-kv-action">—</span>
+                    </div>
+                </div>
+
+                <!-- Network section -->
+                <div class="arch-network-section">
+                    <div class="arch-network-title">⚡ Network Services</div>
+                    <div class="arch-service-row">
+                        <span class="arch-service-dot idle" id="net-dot-stt"></span>
+                        <span class="arch-service-name">STT Server</span>
+                        <span class="arch-service-ms" id="net-ms-stt">—</span>
+                    </div>
+                    <div class="arch-service-row">
+                        <span class="arch-service-dot idle" id="net-dot-llm"></span>
+                        <span class="arch-service-name">LLM (Qwen 32B)</span>
+                        <span class="arch-service-ms" id="net-ms-llm">—</span>
+                    </div>
+                    <div class="arch-service-row">
+                        <span class="arch-service-dot idle" id="net-dot-tts"></span>
+                        <span class="arch-service-name">TTS Engine</span>
+                        <span class="arch-service-ms" id="net-ms-tts">—</span>
+                    </div>
+                    <div class="arch-service-row">
+                        <span class="arch-service-dot idle" id="net-dot-vlm"></span>
+                        <span class="arch-service-name">VLM (Qwen-VL 7B)</span>
+                        <span class="arch-service-ms" id="net-ms-vlm">—</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ TAB: RAW SIGNALS (all existing content preserved) ═══ -->
+    <div class="em-tab-panel" id="em-panel-raw">
+        <div class="emotion-monitor-body">
+            <div class="emotion-monitor-grid">
+                <div class="emotion-monitor-column">
+                    <div class="emotion-monitor-line"><span>Attention</span><strong id="emotion-attention">Camera off</strong></div>
+                    <div class="emotion-monitor-line"><span>Face / Engagement</span><strong id="emotion-face-summary">Not available</strong></div>
+                    <div class="emotion-monitor-line"><span>Policy</span><strong id="emotion-policy-summary">Emotion Engine disabled</strong></div>
+
+                    <div class="emotion-monitor-section">
+                        <div class="emotion-monitor-section-title">Camera Live</div>
+                        <div class="emotion-monitor-kv-list" id="emotion-camera-details"></div>
+                    </div>
+                    <div class="emotion-monitor-section">
+                        <div class="emotion-monitor-section-title">VLM Scene</div>
+                        <div class="emotion-monitor-kv-list" id="emotion-vlm-details"></div>
+                    </div>
+                    <div class="emotion-monitor-section">
+                        <div class="emotion-monitor-section-title">Face Probabilities</div>
+                        <div class="emotion-monitor-badges" id="emotion-raw-face-probs"></div>
+                    </div>
+                </div>
+                <div class="emotion-monitor-column">
+                    <div class="emotion-monitor-section">
+                        <div class="emotion-monitor-section-title">Text Sentiment</div>
+                        <div class="emotion-monitor-text-preview" id="emotion-text-input">No text analyzed yet.</div>
+                        <div class="emotion-monitor-kv-list" id="emotion-text-details"></div>
+                        <div class="emotion-monitor-badges" id="emotion-text-raw-labels"></div>
+                    </div>
+                    <div class="emotion-monitor-section">
+                        <div class="emotion-monitor-section-title">Raw Modality States</div>
+                        <div class="emotion-monitor-badges" id="emotion-text-state"></div>
+                        <div class="emotion-monitor-badges" id="emotion-performance-state"></div>
+                        <div class="emotion-monitor-badges" id="emotion-camera-state"></div>
+                        <div class="emotion-monitor-badges" id="emotion-face-state"></div>
+                    </div>
+                    <div class="emotion-monitor-section">
+                        <div class="emotion-monitor-section-title">Fused Tutor State</div>
+                        <div class="emotion-monitor-badges" id="emotion-fused-state"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<canvas id="cam-canvas" style="display:none"></canvas>
+
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+
+<!-- ✅ SESSION REPORT MODAL -->
+<div class="session-report-overlay" id="session-report-overlay">
+    <div class="session-report-modal">
+        <div class="sr-header">
+            <div class="sr-title-block">
+                <div class="sr-title">📊 Session Report</div>
+                <div class="sr-subtitle" id="sr-date">— · <span id="sr-time">—</span></div>
+            </div>
+            <button class="sr-close-btn" id="sr-close-btn">✕</button>
+        </div>
+
+        <!-- Stats strip -->
+        <div class="sr-stats-strip">
+            <div class="sr-stat-block">
+                <div class="sr-stat-value" id="sr-duration">—</div>
+                <div class="sr-stat-label">Duration</div>
+            </div>
+            <div class="sr-stat-block">
+                <div class="sr-stat-value" id="sr-turns">—</div>
+                <div class="sr-stat-label">Turns</div>
+            </div>
+            <div class="sr-stat-block">
+                <div class="sr-stat-value" id="sr-engagement">—</div>
+                <div class="sr-stat-label">Engagement</div>
+            </div>
+            <div class="sr-stat-block">
+                <div class="sr-stat-value" id="sr-attention">—</div>
+                <div class="sr-stat-label">Focus %</div>
+            </div>
+            <div class="sr-stat-block">
+                <div class="sr-stat-value" id="sr-qa-score">—</div>
+                <div class="sr-stat-label">Q&amp;A Score</div>
+            </div>
+            <div class="sr-stat-block">
+                <div class="sr-stat-value" id="sr-topics-count">—</div>
+                <div class="sr-stat-label">Topics</div>
+            </div>
+        </div>
+
+        <div class="sr-body">
+            <!-- Topics tags -->
+            <div style="margin-bottom:16px">
+                <div class="sr-chart-title">Topics Covered</div>
+                <div class="sr-topics-list" id="sr-topics-tags"></div>
+            </div>
+
+            <div class="sr-charts-grid">
+                <!-- Engagement timeline -->
+                <div class="sr-chart-card wide">
+                    <div class="sr-chart-title">Engagement Over Time</div>
+                    <div class="sr-chart-canvas-wrap">
+                        <canvas id="chart-engagement"></canvas>
+                    </div>
+                </div>
+
+                <!-- Attention distribution -->
+                <div class="sr-chart-card">
+                    <div class="sr-chart-title">Attention Distribution</div>
+                    <div class="sr-chart-canvas-wrap">
+                        <canvas id="chart-attention"></canvas>
+                    </div>
+                </div>
+
+                <!-- Performance radar -->
+                <div class="sr-chart-card">
+                    <div class="sr-chart-title">Performance Radar</div>
+                    <div class="sr-chart-canvas-wrap">
+                        <canvas id="chart-radar"></canvas>
+                    </div>
+                </div>
+
+                <!-- Topics bar -->
+                <div class="sr-chart-card wide">
+                    <div class="sr-chart-title">Topic Coverage (turns per topic)</div>
+                    <div class="sr-chart-canvas-wrap">
+                        <canvas id="chart-topics"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="sr-footer">
+            <span class="sr-footer-note">Session data is stored locally. Use this report to plan your next study session.</span>
+            <button class="sr-download-btn" id="sr-download-btn">⬇ Download JSON</button>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

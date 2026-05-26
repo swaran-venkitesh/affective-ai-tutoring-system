@@ -1,0 +1,69 @@
+.env
+.env.local
+.env.*
+local_secrets.env
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+venv/
+.venv/
+node_modules/
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+
+# Data / private files
+data/
+datasets/
+survey_data/
+participant_data/
+responses/
+raw_feedback/
+private/
+secrets/
+student_login/
+Session_*/
+part4_validation/
+
+# Outputs and logs
+outputs/
+output/
+emotion_output/
+runs/
+logs/
+*.log
+*.txt
+
+# Large model files
+*.pt
+*.pth
+*.onnx
+*.h5
+*.ckpt
+*.safetensors
+*.bin
+
+# Media / archives
+*.mp4
+*.avi
+*.mov
+*.zip
+*.rar
+*.7z
+*.pdf
+*.jpg
+*.jpeg
+*.png
+
+# Project-generated and local-only artifacts
+.playwright-cli/
+PROJECT_REPORT/
+*.bak.*
+python
+
+# Allow only the two requested demo videos
+!demo_videos/
+!demo_videos/complete_system__recording.mp4
+!demo_videos/emotion_engine.mp4
