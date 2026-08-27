@@ -1,5 +1,8 @@
 # Affective Intelligence-Driven Personalized AI Tutoring System
 
+> A multimodal, emotion-aware tutoring research prototype that adapts its
+> instructional strategy according to learner state and engagement.
+
 ## Overview
 
 This repository contains a public, sanitized research implementation of an
@@ -9,13 +12,22 @@ supervision of Dr. Anurag Sharma.
 
 The system combines LLM-based explanation, adaptive tutoring, learner-state
 modeling, empathy-aware response generation, and monitoring-informed
-re-engagement to improve personalized learning.
+re-engagement to support personalized learning.
 
-## Quick Links
+## Explore the Project
 
-- [Complete System Demonstration – 4 minutes 31 seconds](https://github.com/swaran-venkitesh/affective-ai-tutoring-system/releases/latest)
-- [Emotion Engine Architecture](EMOTION_ENGINE_ARCHITECTURE.md)
-- [Emotion Engine Implementation](EMOTION_ENGINE_IMPLEMENTATION.md)
+[Complete Demonstration](https://github.com/swaran-venkitesh/affective-ai-tutoring-system/releases/latest)
+· [System Architecture](#system-architecture)
+· [Emotion Engine Architecture](EMOTION_ENGINE_ARCHITECTURE.md)
+· [Implementation Details](EMOTION_ENGINE_IMPLEMENTATION.md)
+
+## System Architecture
+
+![Multimodal AI Tutor System Architecture](System_architecture.png)
+
+The architecture connects voice, text, document, and image inputs with
+LLM-based tutoring, retrieval, multimodal emotion sensing, adaptive tutor
+policy, monitoring, speech output, and on-screen study materials.
 
 ## Complete System Demonstration
 
@@ -24,18 +36,24 @@ including conversational tutoring, adaptive explanations, quiz generation,
 engagement monitoring, supportive interventions, session analytics, and
 automatic generation and email delivery of study materials.
 
-[▶ View the complete demonstration video]([https://github.com/swaran-venkitesh/affective-ai-tutoring-system/releases/latest)](https://github.com/swaran-venkitesh/affective-ai-tutoring-system/releases/latest))
+[▶ Watch the complete system demonstration](https://github.com/swaran-venkitesh/affective-ai-tutoring-system/releases/latest)
 
-## Key Features
+**Duration:** 4 minutes 31 seconds  
+**Resolution:** 1920 × 1080  
+**Format:** H.264 MP4
 
-- LLM-based concept explanation and adaptive tutoring
-- Learner-state modeling for confusion, frustration, engagement, attention, and self-doubt
-- Productive-confusion and harmful-confusion handling
-- Empathy-trigger logic for selective supportive intervention
-- Step-by-step guidance, hints, worked examples, and simpler re-explanations
-- Monitoring-informed support for attention drop, sleepiness, phone usage, and looking-away behaviour
-- Baseline versus emotion-enabled evaluation workflow
-- Feedback analysis across clarity, confidence, empathy, frustration reduction, and monitoring acceptability
+## Core Capabilities
+
+| Area | Capability |
+|---|---|
+| Adaptive tutoring | LLM-based concept explanations tailored to the learner's needs |
+| Learner-state modeling | Tracks confusion, frustration, engagement, attention, and self-doubt |
+| Confusion handling | Distinguishes productive confusion from harmful or prolonged confusion |
+| Selective empathy | Activates supportive intervention when affect is likely to disrupt learning |
+| Instructional support | Provides hints, worked examples, step-by-step guidance, and simpler re-explanations |
+| Engagement monitoring | Uses attention drop, sleepiness, phone usage, and looking-away indicators |
+| Comparative evaluation | Supports baseline versus emotion-enabled tutoring assessment |
+| Feedback analysis | Examines clarity, confidence, empathy, frustration reduction, and monitoring acceptability |
 
 ## Research Motivation
 
@@ -48,25 +66,25 @@ avoiding unnecessary or excessive interventions.
 
 ## Technology Stack
 
-- Python
-- LLM integration and prompt engineering
-- Flask and backend APIs
-- Emotion and affect modeling
-- Learner-state tracking
-- Monitoring and computer-vision support
-- Survey and feedback analysis
+| Area | Technologies and Methods |
+|---|---|
+| Core development | Python, Flask, and backend APIs |
+| Generative AI | LLM integration and prompt engineering |
+| Affective intelligence | Emotion modeling and learner-state tracking |
+| Multimodal monitoring | Computer-vision and engagement-monitoring support |
+| Evaluation | Survey and feedback analysis |
 
-## Repository Status
+## Research Status
 
-This is a public technical showcase of the current research prototype. The
-implementation is intended for portfolio demonstration, technical review, and
+This repository is a public technical showcase of the current research
+prototype. It is intended for portfolio demonstration, technical review, and
 research discussion.
 
-## Disclaimer
+## Responsible Sharing
 
-This public repository contains sanitized technical material. It does not
-contain confidential participant data, private API keys, institutional data,
-restricted datasets, or unpublished manuscript content.
+This repository contains sanitized technical material. It does not include
+confidential participant data, private API keys, institutional data, restricted
+datasets, or unpublished manuscript content.
 
-Some research-related components may be omitted because they are associated
-with collaborative or unpublished academic work.
+Some research-related components are omitted because they are associated with
+collaborative or unpublished academic work.
