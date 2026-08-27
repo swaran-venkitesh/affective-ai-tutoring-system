@@ -3,6 +3,10 @@
 ## Goal
 Add an optional, text-first but multimodal-capable Emotion Engine to the tutor without replacing the current tutor, board sync, STT/TTS flow, or camera monitor.
 
+## Architecture Diagram
+
+![Emotion Engine Architecture](Emotion%20Engine%20Architecture.png)
+
 ## Pipeline
 student input
 -> routing and tutoring context
